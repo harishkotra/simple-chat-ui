@@ -20,7 +20,6 @@
             <nav id="chat-list"></nav>
             <!-- Wallet Auth Area -->
             <div id="wallet-auth-area" class="sidebar-section">
-                <!-- MODIFIED: Button Text -->
                 <button id="connect-wallet-btn">Connect with MetaMask</button>
                 <div id="wallet-info" class="hidden">
                     <span id="connected-address" title="Click to copy address"></span>
@@ -41,6 +40,8 @@
                 <div id="input-area">
                     <textarea id="user-input" placeholder="Enter your message..." rows="1"></textarea>
                     <button id="send-btn" title="Send Message">Send</button>
+                    <!-- ADDED: Compare Button -->
+                    <button id="compare-btn" title="Compare Responses (up to 3 endpoints)">Compare</button>
                 </div>
             </div>
              <div id="welcome-screen">
@@ -56,9 +57,11 @@
         <div class="modal-content">
             <span class="close-btn" id="close-settings-btn">×</span>
             <h2>Settings</h2>
-            <p>Configure your Gaia Node API endpoint and parameters.</p>
+            <p>Configure your Gaia Node API endpoint and parameters for single chats, and manage endpoints for comparison.</p>
+
+            <!-- Existing Single Chat Settings -->
             <div class="settings-section">
-                <h3>API Configuration</h3>
+                <h3>Primary API Configuration (for 'Send')</h3>
                 <label for="api-endpoint">API Base URL:</label>
                 <input type="url" id="api-endpoint" placeholder="e.g., https://llama70b.gaia.domains/v1">
                 <small class="info-text">The '/chat/completions' path will be added automatically.</small>
@@ -72,17 +75,30 @@
                 <small class="info-text">Define the AI's behavior.</small>
             </div>
             <div class="settings-section">
-                <h3>Generation Parameters</h3>
+                <h3>Primary Generation Parameters (for 'Send')</h3>
                 <div class="param-grid">
                     <div><label for="temperature">Temperature:</label><input type="number" id="temperature" step="0.1" min="0" max="2" placeholder="1.0"><small class="info-text">Controls randomness.</small></div>
                     <div><label for="top_p">Top P:</label><input type="number" id="top_p" step="0.1" min="0" max="1" placeholder="1.0"><small class="info-text">Nucleus sampling.</small></div>
                     <div><label for="presence_penalty">Presence Penalty:</label><input type="number" id="presence_penalty" step="0.1" min="-2.0" max="2.0" placeholder="0.0"><small class="info-text">Discourages existing tokens.</small></div>
                     <div><label for="frequency_penalty">Frequency Penalty:</label><input type="number" id="frequency_penalty" step="0.1" min="-2.0" max="2.0" placeholder="0.0"><small class="info-text">Discourages frequent tokens.</small></div>
                 </div>
-                <small class="info-text">Note: Streaming is always enabled.</small>
+                <small class="info-text">Note: Streaming is always enabled for 'Send'.</small>
             </div>
+
+            <!-- ADDED: Comparison Endpoints Section -->
+            <div class="settings-section">
+                <h3>Comparison Endpoints (for 'Compare')</h3>
+                <p>Add and select up to 3 OpenAI-compatible endpoints to compare responses simultaneously.</p>
+                <div id="comparison-endpoint-list">
+                    <!-- Endpoint items will be added here by JS -->
+                </div>
+                <button id="add-comparison-endpoint-btn" class="small-btn">Add Endpoint</button>
+                <small class="info-text">Comparison uses default parameters (Temp: 0.7, TopP: 1.0) and streams responses sequentially.</small>
+            </div>
+            <!-- End ADDED -->
+
             <div class="security-warning">
-                 <strong>Security Warning:</strong> Your API key is stored in your browser's `localStorage`. While convenient, this means anyone with access to your browser's developer tools can potentially view it. The key is sent *only* to the API Base URL you provide above and is never sent to the server hosting this chat interface. Use with caution, especially on shared computers. For higher security, consider running models locally or using services with temporary credentials.
+                 <strong>Security Warning:</strong> Your API keys are stored in your browser's `localStorage`. While convenient, this means anyone with access to your browser's developer tools can potentially view them. Keys are sent *only* to the API Base URLs you provide and are never sent to the server hosting this chat interface. Use with caution, especially on shared computers. For higher security, consider running models locally or using services with temporary credentials.
             </div>
             <button id="save-settings-btn">Save Settings</button>
         </div>

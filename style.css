@@ -94,9 +94,16 @@ header h1#chat-title { font-size: 1.1em; font-weight: 500; color: #444; white-sp
 #user-input { flex-grow: 1; padding: 10px 15px; border: 1px solid #ccc; border-radius: 20px; resize: none; font-size: 1em; line-height: 1.4; margin-right: 10px; max-height: 150px; overflow-y: auto; background-color: #f7f7f7; scrollbar-width: none; -ms-overflow-style: none; }
 #user-input::-webkit-scrollbar { display: none; }
 #user-input:focus { outline: none; border-color: #80bdff; box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25); background-color: #fff; }
-#send-btn { background-color: #007bff; color: white; border: none; border-radius: 20px; height: 45px; font-size: 1em; font-weight: 500; cursor: pointer; padding: 0 20px; display: flex; justify-content: center; align-items: center; transition: background-color 0.2s; flex-shrink: 0; }
+#send-btn, #compare-btn { /* ADDED: #compare-btn */
+    color: white; border: none; border-radius: 20px; height: 45px; font-size: 1em; font-weight: 500; cursor: pointer; padding: 0 20px; display: flex; justify-content: center; align-items: center; transition: background-color 0.2s; flex-shrink: 0;
+}
+#send-btn { background-color: #007bff; margin-left: 10px; /* Adjusted margin */ }
 #send-btn:hover { background-color: #0056b3; }
 #send-btn:disabled { background-color: #cccccc; color: #666; cursor: not-allowed; }
+/* ADDED: Styles for Compare Button */
+#compare-btn { background-color: #6f42c1; margin-left: 10px; }
+#compare-btn:hover { background-color: #5a379b; }
+#compare-btn:disabled { background-color: #cccccc; color: #666; cursor: not-allowed; }
 
 /* Settings Modal */
 .modal { position: fixed; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); display: flex; justify-content: center; align-items: center; z-index: 1000; }
@@ -124,18 +131,139 @@ header h1#chat-title { font-size: 1.1em; font-weight: 500; color: #444; white-sp
 .close-btn { position: absolute; top: 10px; right: 15px; font-size: 1.8em; font-weight: bold; color: #aaa; cursor: pointer; z-index: 10; }
 .close-btn:hover { color: #000; }
 
+/* ADDED: Styles for Comparison Endpoint Settings */
+#comparison-endpoint-list { margin-bottom: 15px; }
+.comparison-endpoint-item {
+    border: 1px solid #e0e0e0; border-radius: 4px; padding: 15px; margin-bottom: 10px;
+    display: grid; grid-template-columns: auto 1fr auto; gap: 10px 15px; align-items: center;
+    background-color: #f8f9fa;
+}
+.comparison-endpoint-item label { margin-bottom: 2px; font-size: 0.85em; color: #555; }
+.comparison-endpoint-item input[type="text"],
+.comparison-endpoint-item input[type="url"],
+.comparison-endpoint-item input[type="password"] { font-size: 0.9em; padding: 8px; margin-bottom: 0; }
+.endpoint-item-col1 { grid-column: 1 / 2; display: flex; flex-direction: column; justify-content: center; } /* Checkbox */
+.endpoint-item-col2 { grid-column: 2 / 3; } /* Inputs */
+.endpoint-item-col3 { grid-column: 3 / 4; display: flex; align-items: center; } /* Delete button */
+.endpoint-item-fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; }
+.comparison-endpoint-item .small-btn {
+    background-color: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer;
+    font-size: 0.8em; padding: 5px 8px; transition: background-color 0.2s; line-height: 1;
+}
+.comparison-endpoint-item .small-btn:hover { background-color: #c82333; }
+#add-comparison-endpoint-btn {
+    background-color: #007bff; color: white; padding: 8px 15px; border: none; border-radius: 4px;
+    cursor: pointer; font-size: 0.9em; transition: background-color 0.2s; display: inline-block; width: auto;
+}
+#add-comparison-endpoint-btn:hover { background-color: #0056b3; }
+input[type="checkbox"].activate-endpoint-cb { transform: scale(1.2); cursor: pointer; }
+
+/* ADDED: Styles for Comparison Results */
+.comparison-container {
+    width: 100%;
+    margin: 15px 0 10px 0; /* Add some spacing */
+    padding: 15px;
+    border: 1px solid #d3dce6;
+    border-radius: 8px;
+    background-color: #f8f9fa;
+}
+.comparison-container h4 { /* Title for the comparison block */
+    font-size: 1em;
+    color: #334155;
+    margin-bottom: 15px;
+    padding-bottom: 5px;
+    border-bottom: 1px solid #e0e0e0;
+    font-weight: 500;
+}
+.comparison-results-grid {
+    display: grid;
+    gap: 15px;
+    /* Dynamically set grid-template-columns in JS based on count */
+}
+.comparison-column {
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    background-color: #ffffff;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden; /* Prevent content spill */
+}
+.comparison-column-header {
+    padding: 8px 12px;
+    background-color: #e9eef6;
+    border-bottom: 1px solid #d3dce6;
+    font-size: 0.9em;
+    font-weight: 500;
+    color: #334155;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+}
+.comparison-column-header .endpoint-name {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 80%;
+}
+.comparison-column-header .endpoint-time {
+    font-size: 0.8em;
+    color: #555;
+    white-space: nowrap;
+}
+.comparison-column-content {
+    padding: 10px 12px;
+    flex-grow: 1;
+    overflow-y: auto; /* Allow scrolling within column if needed */
+    max-height: 400px; /* Limit height */
+    font-size: 0.9em;
+    line-height: 1.5;
+    word-wrap: break-word;
+    white-space: pre-wrap;
+}
+.comparison-column-content p { margin: 0 0 5px 0; } /* Paragraph spacing */
+.comparison-column-content pre,
+.comparison-column-content code {
+    font-size: 0.85em; /* Slightly smaller code blocks */
+    max-width: 100%;
+}
+.comparison-column .typing-indicator {
+    padding: 10px 0;
+    text-align: center;
+}
+.comparison-column .error-message {
+    color: #721c24;
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    padding: 8px;
+    border-radius: 4px;
+    font-size: 0.85em;
+    font-style: italic;
+}
+
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
     #sidebar { width: 200px; }
     .sidebar-logo { font-size: 1.1em; padding: 15px 10px; }
     #chat-history { max-width: 95%; }
-    #input-area { max-width: 100%; padding-left: 15px; padding-right: 15px; }
+    #input-area { max-width: 100%; padding-left: 15px; padding-right: 15px; flex-wrap: wrap; } /* Allow wrap */
+    #user-input { flex-basis: 100%; margin-right: 0; margin-bottom: 10px; }
+    #send-btn, #compare-btn { height: 40px; padding: 0 15px; margin-left: 0; margin-right: 10px; flex-grow: 1; } /* Adjust buttons */
+    #send-btn { margin-right: 5px;}
+    #compare-btn { margin-left: 5px; }
+
     header h1#chat-title { font-size: 1em; }
-    #send-btn { padding: 0 15px; height: 40px; }
+    /* #send-btn { padding: 0 15px; height: 40px; } */
     #user-input { max-height: 120px; }
     .modal-content { max-width: 90%; padding: 20px; }
     .param-grid { grid-template-columns: 1fr; gap: 15px; }
     .chat-item-actions { opacity: 1; }
+    /* ADDED: Stack comparison columns */
+    .comparison-results-grid { grid-template-columns: 1fr; }
+    .comparison-column-content { max-height: 300px; }
+    .comparison-endpoint-item { grid-template-columns: auto 1fr; } /* Stack checkbox/delete */
+    .endpoint-item-col3 { grid-column: 1 / 2; grid-row: 2 / 3; justify-self: end; }
 }
 @media (max-width: 600px) {
     #sidebar { width: 180px; }
@@ -144,7 +272,8 @@ header h1#chat-title { font-size: 1.1em; font-weight: 500; color: #444; white-sp
     .sidebar-header, .sidebar-footer, #wallet-auth-area { padding: 10px; }
     #new-chat-btn { font-size: 0.85em; padding: 8px 10px;}
     #settings-btn { font-size: 0.9em; padding: 6px 2px; gap: 6px;}
-     #send-btn { padding: 0 12px; height: 38px; font-size: 0.9em; }
+    #send-btn, #compare-btn { height: 38px; font-size: 0.9em; padding: 0 12px;} /* Adjust buttons */
+     /* #send-btn { padding: 0 12px; height: 38px; font-size: 0.9em; } */
      #user-input { font-size: 0.95em; }
      .modal-content { padding: 15px;}
      .settings-section h3 { font-size: 1em; margin-bottom: 10px; }
@@ -152,4 +281,6 @@ header h1#chat-title { font-size: 1.1em; font-weight: 500; color: #444; white-sp
      .chat-item-actions button { font-size: 0.9em; padding: 2px; }
      #connected-address { max-width: 100px; }
      #connect-wallet-btn { font-size: 0.85em; padding: 9px 12px;}
+    /* ADDED: Comparison settings adjustments */
+    .comparison-endpoint-item .endpoint-item-fields { grid-template-columns: 1fr; } /* Stack fields within endpoint */
 }
