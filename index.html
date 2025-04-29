@@ -6,34 +6,38 @@
     <title>Simple Chat UI for Gaia Nodes</title>
     <link rel="stylesheet" href="style.css">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💬</text></svg>">
+    <!-- Ethers.js v6 via CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.10.0/ethers.umd.min.js" integrity="sha512-ZsVPch6WR7PBMfZmfqW98GbQAyysfsBBJk5N94qY9Z05JSOJCFQ7xlqTmBo3qX+h+hJz8x3+RT6Ff07TzBwN3w==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 </head>
 <body>
     <div id="app-container">
-        <!-- Sidebar for Chat History -->
+        <!-- Sidebar -->
         <div id="sidebar">
             <div class="sidebar-logo"> Simple Chat UI </div>
             <div class="sidebar-header">
                 <button id="new-chat-btn">New Chat</button>
             </div>
-            <nav id="chat-list">
-                <!-- Chat history items will be populated here -->
-            </nav>
+            <nav id="chat-list"></nav>
+            <!-- Wallet Auth Area -->
+            <div id="wallet-auth-area" class="sidebar-section">
+                <!-- MODIFIED: Button Text -->
+                <button id="connect-wallet-btn">Connect with MetaMask</button>
+                <div id="wallet-info" class="hidden">
+                    <span id="connected-address" title="Click to copy address"></span>
+                    <button id="disconnect-wallet-btn" title="Disconnect">🔌</button>
+                </div>
+            </div>
+            <!-- Settings Area -->
             <div class="sidebar-footer">
                  <button id="settings-btn" title="Settings">⚙️ Settings</button>
             </div>
         </div>
 
-        <!-- Main Chat Area -->
+        <!-- Main Content -->
         <div id="main-content">
             <div id="chat-interface" class="hidden">
-                <header>
-                    <h1 id="chat-title">Chat</h1>
-                </header>
-                <div id="chat-window">
-                    <div id="chat-history">
-                        <!-- Chat messages will appear here -->
-                    </div>
-                </div>
+                <header><h1 id="chat-title">Chat</h1></header>
+                <div id="chat-window"><div id="chat-history"></div></div>
                 <div id="input-area">
                     <textarea id="user-input" placeholder="Enter your message..." rows="1"></textarea>
                     <button id="send-btn" title="Send Message">Send</button>
@@ -41,8 +45,8 @@
             </div>
              <div id="welcome-screen">
                  <h2>Simple AI Chat</h2>
-                 <p>Start a new chat or select one from the sidebar.</p>
-                 <p>Configure your API key in ⚙️ Settings.</p>
+                 <p id="welcome-message">Connect your wallet to load chats & start chatting.</p>
+                 <p>Configure API settings (optional) via ⚙️ Settings.</p>
             </div>
         </div>
     </div>
@@ -53,60 +57,37 @@
             <span class="close-btn" id="close-settings-btn">×</span>
             <h2>Settings</h2>
             <p>Configure your Gaia Node API endpoint and parameters.</p>
-
             <div class="settings-section">
                 <h3>API Configuration</h3>
                 <label for="api-endpoint">API Base URL:</label>
                 <input type="url" id="api-endpoint" placeholder="e.g., https://llama70b.gaia.domains/v1">
-                <small class="info-text">The '/chat/completions' path will be added automatically if needed.</small>
-
+                <small class="info-text">The '/chat/completions' path will be added automatically.</small>
                 <label for="api-key">API Key:</label>
                 <input type="password" id="api-key" placeholder="Enter your API Key">
-                <small class="info-text">Need a key for Gaia Public Nodes? <a href="https://docs.gaianet.ai/getting-started/authentication" target="_blank" rel="noopener noreferrer">Get API Key info here</a>.</small>
-
+                <small class="info-text">Need a key for Gaia Public Nodes? <a href="https://docs.gaianet.ai/getting-started/authentication" target="_blank" rel="noopener noreferrer">Get info here</a>.</small>
                 <label for="model-name">Model Name:</label>
                 <input type="text" id="model-name" placeholder="e.g., llama70b">
-
                 <label for="system-prompt">System Prompt (Optional):</label>
-                <textarea id="system-prompt" rows="3" placeholder="e.g., You are a helpful assistant. Respond in markdown."></textarea>
-                <small class="info-text">Define the AI's behavior or persona.</small>
+                <textarea id="system-prompt" rows="3" placeholder="e.g., You are a helpful assistant..."></textarea>
+                <small class="info-text">Define the AI's behavior.</small>
             </div>
-
             <div class="settings-section">
                 <h3>Generation Parameters</h3>
                 <div class="param-grid">
-                    <div>
-                        <label for="temperature">Temperature:</label>
-                        <input type="number" id="temperature" step="0.1" min="0" max="2" placeholder="1.0">
-                        <small class="info-text">Controls randomness (0=deterministic, 2=random).</small>
-                    </div>
-                    <div>
-                        <label for="top_p">Top P:</label>
-                        <input type="number" id="top_p" step="0.1" min="0" max="1" placeholder="1.0">
-                        <small class="info-text">Nucleus sampling threshold (alternative to temp).</small>
-                    </div>
-                    <div>
-                        <label for="presence_penalty">Presence Penalty:</label>
-                        <input type="number" id="presence_penalty" step="0.1" min="-2.0" max="2.0" placeholder="0.0">
-                        <small class="info-text">Penalizes new tokens based on existing ones.</small>
-                    </div>
-                    <div>
-                        <label for="frequency_penalty">Frequency Penalty:</label>
-                        <input type="number" id="frequency_penalty" step="0.1" min="-2.0" max="2.0" placeholder="0.0">
-                        <small class="info-text">Penalizes new tokens based on their frequency.</small>
-                    </div>
+                    <div><label for="temperature">Temperature:</label><input type="number" id="temperature" step="0.1" min="0" max="2" placeholder="1.0"><small class="info-text">Controls randomness.</small></div>
+                    <div><label for="top_p">Top P:</label><input type="number" id="top_p" step="0.1" min="0" max="1" placeholder="1.0"><small class="info-text">Nucleus sampling.</small></div>
+                    <div><label for="presence_penalty">Presence Penalty:</label><input type="number" id="presence_penalty" step="0.1" min="-2.0" max="2.0" placeholder="0.0"><small class="info-text">Discourages existing tokens.</small></div>
+                    <div><label for="frequency_penalty">Frequency Penalty:</label><input type="number" id="frequency_penalty" step="0.1" min="-2.0" max="2.0" placeholder="0.0"><small class="info-text">Discourages frequent tokens.</small></div>
                 </div>
+                <small class="info-text">Note: Streaming is always enabled.</small>
             </div>
-
-
             <div class="security-warning">
-                <strong>Security Warning:</strong> Your API key is stored in your browser's `localStorage`. While convenient, this means anyone with access to your browser's developer tools can potentially view it. The key is sent *only* to the API Base URL you provide above and is never sent to the server hosting this chat interface. Use with caution, especially on shared computers. For higher security, consider running models locally or using services with temporary credentials.
+                 <strong>Security Warning:</strong> Your API key is stored in your browser's `localStorage`. While convenient, this means anyone with access to your browser's developer tools can potentially view it. The key is sent *only* to the API Base URL you provide above and is never sent to the server hosting this chat interface. Use with caution, especially on shared computers. For higher security, consider running models locally or using services with temporary credentials.
             </div>
-
             <button id="save-settings-btn">Save Settings</button>
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <script type="module" src="script.js"></script>
 </body>
 </html>
